@@ -295,21 +295,54 @@ function setDirection(dir, value) {
 }
 
 function bindTouchControls() {
-  document.querySelectorAll('#touchControls button').forEach((button) => {
-    const dir = button.dataset.dir;
-    const down = (event) => {
-      event.preventDefault();
-      setDirection(dir, true);
-    };
-    const up = (event) => {
-      event.preventDefault();
-      setDirection(dir, false);
-    };
-    button.addEventListener('pointerdown', down);
-    button.addEventListener('pointerup', up);
-    button.addEventListener('pointercancel', up);
-    button.addEventListener('pointerleave', up);
+  const joystick = document.getElementById('moveJoystick');
+  const knob = document.getElementById('joystickKnob');
+  if (!joystick || !knob) return;
+
+  const directions = ['up', 'down', 'left', 'right'];
+  const radius = 62;
+  const deadZone = 12;
+  let activePointerId = null;
+
+  const reset = () => {
+    activePointerId = null;
+    knob.style.transform = 'translate(-50%, -50%)';
+    directions.forEach((dir) => setDirection(dir, false));
+  };
+
+  const update = (event) => {
+    const bounds = joystick.getBoundingClientRect();
+    const centerX = bounds.left + bounds.width / 2;
+    const centerY = bounds.top + bounds.height / 2;
+    let x = event.clientX - centerX;
+    let y = event.clientY - centerY;
+    const distance = Math.hypot(x, y);
+    if (distance > radius) {
+      x = (x / distance) * radius;
+      y = (y / distance) * radius;
+    }
+    knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    directions.forEach((dir) => setDirection(dir, false));
+    if (distance < deadZone) return;
+    setDirection('left', x < -deadZone);
+    setDirection('right', x > deadZone);
+    setDirection('up', y < -deadZone);
+    setDirection('down', y > deadZone);
+  };
+
+  joystick.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    activePointerId = event.pointerId;
+    joystick.setPointerCapture(event.pointerId);
+    update(event);
   });
+  joystick.addEventListener('pointermove', (event) => {
+    if (event.pointerId === activePointerId) update(event);
+  });
+  joystick.addEventListener('pointerup', (event) => {
+    if (event.pointerId === activePointerId) reset();
+  });
+  joystick.addEventListener('pointercancel', reset);
 }
 
 function bindKeyboard() {
