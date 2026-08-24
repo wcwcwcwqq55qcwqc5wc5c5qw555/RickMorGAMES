@@ -1,0 +1,27 @@
+{
+  "name": "futbolito-online",
+  "version": "1.0.0",
+  "description": "RicMor Soccers, videojuego web 1 vs 1 de futbol en tiempo real.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "phaser",
+    "socket.io",
+    "multiplayer",
+    "futbol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "phaser": "^3.80.1",
+    "socket.io": "^4.7.5",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#07120d">
+    <title>RickMor Games</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/vendor/phaser.min.js"></script>
+  </head>
+  <body>
+    <main id="app">
+      <div id="introSplash" class="intro-splash" aria-hidden="true">
+        <div class="intro-stage">
+          <div class="intro-player">
+            <span class="head"></span>
+            <span class="body"></span>
+            <span class="arm left"></span>
+            <span class="arm right"></span>
+            <span class="leg left"></span>
+            <span class="leg right"></span>
+          </div>
+          <div class="intro-ball"></div>
+        </div>
+      </div>
+
+      <section id="menu" class="screen active home-screen">
+        <div class="panel main-menu-panel">
+          <h1>RickMor Games</h1>
+          <p class="subtitle">Elige tu juego</p>
+          <div id="gamePicker" class="game-picker">
+            <button id="footballGameBtn" class="game-choice primary">FUTBOL</button>
+            <button id="shooterGameBtn" class="game-choice shooter-choice">DISPAROS</button>
+          </div>
+          <div id="footballOptions" class="football-options hidden">
+            <button id="backToGamesBtn" class="back-link">VOLVER A JUEGOS</button>
+            <label for="playerName">Tu nombre</label>
+            <input id="playerName" maxlength="18" autocomplete="nickname" placeholder="Jugador">
+            <label for="cpuLevel">Nivel de la computadora</label>
+            <select id="cpuLevel">
+              <option value="easy">Facil</option>
+              <option value="normal" selected>Normal</option>
+              <option value="hard">Dificil</option>
+            </select>
+            <div class="actions">
+              <button id="playCpuBtn" class="primary">JUGAR VS CPU</button>
+              <button id="createRoomBtn" class="primary">CREAR SALA</button>
+              <button id="showJoinBtn">UNIRSE A UNA SALA</button>
+            </div>
+          </div>
+          <p id="menuError" class="error" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="shooterSetup" class="screen shooter-screen">
+        <div class="panel shooter-panel">
+          <button id="shooterBackBtn" class="back-link">VOLVER A JUEGOS</button>
+          <h2>SHOOTER ARENA</h2>
+          <p class="subtitle">Configura tu batalla</p>
+          <label for="shooterName">Nombre</label>
+          <input id="shooterName" maxlength="18" placeholder="Jugador">
+          <label for="botCount">Bots: <strong id="botCountValue">3</strong></label>
+          <input id="botCount" type="range" min="1" max="10" value="3">
+          <label for="botDifficulty">Dificultad</label>
+          <select id="botDifficulty">
+            <option value="easy">Facil</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Dificil</option>
+            <option value="extreme">Extremo</option>
+          </select>
+          <div class="actions">
+            <button id="startOfflineShooterBtn" class="primary">JUGAR SOLO</button>
+            <button id="createShooterRoomBtn">CREAR SALA ONLINE</button>
+          </div>
+          <p id="shooterMenuError" class="error" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="joinScreen" class="screen">
+        <div class="panel">
+          <h2>Unirse a sala</h2>
+          <label for="joinName">Tu nombre</label>
+          <input id="joinName" maxlength="18" autocomplete="nickname" placeholder="Jugador">
+          <label for="roomCodeInput">Codigo de sala</label>
+          <input id="roomCodeInput" maxlength="6" autocomplete="off" placeholder="ABC123">
+          <div class="actions">
+            <button id="joinRoomBtn" class="primary">ENTRAR AL PARTIDO</button>
+            <button id="backFromJoinBtn">VOLVER</button>
+          </div>
+          <p id="joinError" class="error" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="lobby" class="screen">
+        <div class="panel compact">
+          <h2>SALA CREADA</h2>
+          <p class="code-label">CODIGO:</p>
+          <div id="roomCode" class="room-code">------</div>
+          <button id="copyCodeBtn" class="primary">COPIAR CODIGO</button>
+          <p class="hint">Comparte este codigo con tu amigo</p>
+          <p id="waitingText" class="pulse">Esperando al segundo jugador...</p>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="screen game-screen">
+        <header class="scorebar">
+          <span id="blueName" class="blue-name">Azul</span>
+          <strong id="scoreText">0 - 0</strong>
+          <span id="redName" class="red-name">Rojo</span>
+        </header>
+        <div id="timer">02:00</div>
+        <div id="gameWrap">
+          <div id="gameCanvas"></div>
+          <div id="countdown" class="overlay hidden"></div>
+          <div id="goalOverlay" class="overlay hidden">&iexcl;&iexcl;&iexcl;GOOOL!!!</div>
+          <div id="endOverlay" class="end-overlay hidden">
+            <h2>&iexcl;PARTIDO TERMINADO!</h2>
+            <p id="finalScore"></p>
+            <p id="winnerText"></p>
+            <div class="actions">
+              <button id="rematchBtn" class="primary">REVANCHA</button>
+              <button id="homeBtn">VOLVER AL INICIO</button>
+            </div>
+            <p id="rematchStatus" class="hint"></p>
+          </div>
+          <div id="disconnectOverlay" class="end-overlay hidden">
+            <h2>Tu rival se ha desconectado</h2>
+            <button id="homeAfterDisconnectBtn" class="primary">VOLVER AL INICIO</button>
+          </div>
+        </div>
+        <nav id="touchControls" aria-label="Controles tactiles">
+          <button data-dir="up">&uarr;</button>
+          <button data-dir="left">&larr;</button>
+          <button data-dir="down">&darr;</button>
+          <button data-dir="right">&rarr;</button>
+        </nav>
+      </section>
+
+      <section id="shooterScreen" class="screen shooter-game-screen">
+        <header class="shooter-hud">
+          <strong>SHOOTER ARENA</strong>
+          <span id="shooterScore">0 - 0</span>
+          <span id="shooterHealth">HP 100</span>
+          <span id="shooterStamina">ENERGIA 100</span>
+          <span id="shooterAmmo">30 / 30</span>
+          <span id="shooterTimer">05:00</span>
+        </header>
+        <div id="shooterWrap">
+          <div id="shooterCanvas"></div>
+          <div class="fps-crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+          <div id="shooterStatus" class="shooter-status"></div>
+          <div class="fps-help">WASD MOVER <b>SHIFT</b> CORRER <b>CTRL</b> AGACHAR <b>SPACE</b> SALTAR</div>
+          <div id="shooterEndOverlay" class="end-overlay hidden">
+            <h2>PARTIDA TERMINADA</h2>
+            <p id="shooterWinnerText"></p>
+            <div class="actions"><button id="shooterAgainBtn" class="primary">REVANCHA</button><button id="shooterHomeBtn">VOLVER AL INICIO</button></div>
+          </div>
+        </div>
+        <nav id="shooterTouchControls" aria-label="Controles del shooter">
+          <button data-shoot-dir="up">&uarr;</button><button data-shoot-dir="left">&larr;</button><button data-shoot-dir="down">&darr;</button><button data-shoot-dir="right">&rarr;</button>
+          <button id="shootTouchBtn" class="shoot-button">DISPARAR</button><button id="reloadTouchBtn">RECARGAR</button>
+        </nav>
+      </section>
+    </main>
+    <script src="./game.js"></script>
+    <script type="module" src="./shooter.js"></script>
+  </body>
+</html>
